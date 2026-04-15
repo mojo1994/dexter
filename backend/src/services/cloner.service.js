@@ -2,6 +2,8 @@ const puppeteer = require('puppeteer');
 const cheerio = require('cheerio');
 const path = require('path');
 const fs = require('fs');
+const https = require('https');
+const http = require('http');
 const { generateId, getUploadDir, sanitizeFilename, isValidUrl, getFileExtension } = require('../utils/helpers');
 
 class ClonerService {
@@ -181,7 +183,7 @@ class ClonerService {
       });
 
       // Download assets
-      await this.downloadAssets(assets, projectId, page);
+      await this.downloadAssets(assets, projectId);
 
       // Detect frameworks
       const frameworks = this.detectFrameworks($, fullHtml);
@@ -217,7 +219,7 @@ class ClonerService {
     }
   }
 
-  async downloadAssets(assets, projectId, page) {
+  async downloadAssets(assets, projectId) {
     const uploadDir = getUploadDir(projectId);
     const assetsDir = path.join(uploadDir, 'assets');
 
@@ -225,31 +227,80 @@ class ClonerService {
       fs.mkdirSync(assetsDir, { recursive: true });
     }
 
-    const downloadPromises = assets.map(async (asset) => {
-      try {
-        if (asset.originalUrl.startsWith('data:')) return;
+    // Download in batches of 5, lazily creating promises per batch
+    for (let i = 0; i < assets.length; i += 5) {
+      const batch = assets.slice(i, i + 5);
+      const batchPromises = batch.map((asset) => this.downloadAsset(asset, assetsDir));
+      await Promise.allSettled(batchPromises);
+    }
+  }
 
-        const response = await page.goto(asset.originalUrl, {
-          waitUntil: 'networkidle2',
-          timeout: 10000,
+  downloadAsset(asset, assetsDir) {
+    return new Promise((resolve) => {
+      try {
+        if (asset.originalUrl.startsWith('data:')) {
+          resolve();
+          return;
+        }
+
+        const client = asset.originalUrl.startsWith('https') ? https : http;
+        const request = client.get(asset.originalUrl, { timeout: 10000 }, (response) => {
+          // Follow redirects
+          if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+            const redirectClient = response.headers.location.startsWith('https') ? https : http;
+            redirectClient.get(response.headers.location, { timeout: 10000 }, (redirectResponse) => {
+              this.handleAssetResponse(redirectResponse, asset, assetsDir, resolve);
+            }).on('error', (err) => {
+              console.warn(`Failed to download asset (redirect): ${asset.originalUrl}`, err.message);
+              resolve();
+            });
+            return;
+          }
+          this.handleAssetResponse(response, asset, assetsDir, resolve);
         });
 
-        if (response && response.ok()) {
-          const buffer = await response.buffer();
-          const filePath = path.join(assetsDir, asset.filename);
-          fs.writeFileSync(filePath, buffer);
-          asset.localPath = filePath;
-          asset.size = buffer.length;
-        }
+        request.on('error', (err) => {
+          console.warn(`Failed to download asset: ${asset.originalUrl}`, err.message);
+          resolve();
+        });
+
+        request.on('timeout', () => {
+          request.destroy();
+          console.warn(`Timeout downloading asset: ${asset.originalUrl}`);
+          resolve();
+        });
       } catch (err) {
         console.warn(`Failed to download asset: ${asset.originalUrl}`, err.message);
+        resolve();
       }
     });
+  }
 
-    // Download in batches of 5
-    for (let i = 0; i < downloadPromises.length; i += 5) {
-      await Promise.allSettled(downloadPromises.slice(i, i + 5));
+  handleAssetResponse(response, asset, assetsDir, resolve) {
+    if (response.statusCode !== 200) {
+      console.warn(`Non-200 status for asset: ${asset.originalUrl} (${response.statusCode})`);
+      resolve();
+      return;
     }
+
+    const chunks = [];
+    response.on('data', (chunk) => chunks.push(chunk));
+    response.on('end', () => {
+      try {
+        const buffer = Buffer.concat(chunks);
+        const filePath = path.join(assetsDir, asset.filename);
+        fs.writeFileSync(filePath, buffer);
+        asset.localPath = filePath;
+        asset.size = buffer.length;
+      } catch (err) {
+        console.warn(`Failed to save asset: ${asset.originalUrl}`, err.message);
+      }
+      resolve();
+    });
+    response.on('error', (err) => {
+      console.warn(`Failed to read asset response: ${asset.originalUrl}`, err.message);
+      resolve();
+    });
   }
 
   detectFrameworks($, html) {
@@ -261,7 +312,7 @@ class ClonerService {
     if (html.includes('tailwind') || html.includes('tw-')) {
       frameworks.push('TailwindCSS');
     }
-    if (html.includes('jquery') || typeof $ !== 'undefined') {
+    if (html.includes('jquery') || $('script[src*="jquery"]').length > 0) {
       frameworks.push('jQuery');
     }
     if (html.includes('react') || html.includes('__next')) {

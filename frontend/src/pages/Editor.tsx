@@ -178,7 +178,7 @@ export default function EditorPage() {
     }
   }, [pageId, loadPage]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!editorRef.current || !pageId) return;
 
     setSaving(true);
@@ -196,7 +196,12 @@ export default function EditorPage() {
     } finally {
       setSaving(false);
     }
-  };
+  }, [pageId, pageName, setDirty, setSaving]);
+
+  const handleSaveRef = useRef(handleSave);
+  useEffect(() => {
+    handleSaveRef.current = handleSave;
+  }, [handleSave]);
 
   const handleDeviceChange = (newDevice: 'desktop' | 'tablet' | 'mobile') => {
     setDevice(newDevice);
@@ -265,11 +270,11 @@ export default function EditorPage() {
     }
   };
 
-  // Auto-save every 30 seconds
+  // Auto-save every 30 seconds using ref to avoid stale closure
   useEffect(() => {
     const interval = setInterval(() => {
       if (isDirty && !isSaving) {
-        handleSave();
+        handleSaveRef.current();
       }
     }, 30000);
     return () => clearInterval(interval);

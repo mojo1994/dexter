@@ -105,6 +105,16 @@ function saveVersion(req, res) {
 
 function getVersions(req, res) {
   try {
+    const page = pageService.getPageById(req.params.id);
+    if (!page) {
+      return res.status(404).json({ error: 'Page not found' });
+    }
+
+    const project = projectService.getProjectById(page.project_id);
+    if (!project || project.user_id !== req.user.id) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
     const versions = pageService.getVersions(req.params.id);
     res.json({ versions });
   } catch (err) {
@@ -115,6 +125,16 @@ function getVersions(req, res) {
 
 function restoreVersion(req, res) {
   try {
+    const pageData = pageService.getPageById(req.params.id);
+    if (!pageData) {
+      return res.status(404).json({ error: 'Page not found' });
+    }
+
+    const project = projectService.getProjectById(pageData.project_id);
+    if (!project || project.user_id !== req.user.id) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
     const { versionId } = req.body;
     const page = pageService.restoreVersion(req.params.id, versionId);
 
