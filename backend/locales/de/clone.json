@@ -1,0 +1,23 @@
+{
+  "title": "Eine Seite Klonen",
+  "urlLabel": "Seiten-URL",
+  "urlPlaceholder": "https://beispiel.com/verkaufsseite",
+  "nameLabel": "Projektname",
+  "namePlaceholder": "Meine Verkaufsseite",
+  "optional": "optional",
+  "startCloning": "Klonen Starten",
+  "cloning": "Klonen...",
+  "cloningStarted": "Klonen gestartet! Dies kann einen Moment dauern...",
+  "cloneSuccess": "Seite erfolgreich geklont!",
+  "cloneFailed": "Klonen fehlgeschlagen. Bitte versuchen Sie es erneut.",
+  "invalidUrl": "Ungültige URL",
+  "fetching": "Seite abrufen...",
+  "parsing": "HTML analysieren...",
+  "downloading": "Assets herunterladen...",
+  "building": "Projekt erstellen...",
+  "complete": "Fertig!",
+  "downloadZip": "ZIP Herunterladen",
+  "editInCanvas": "Im Canvas Bearbeiten",
+  "assetsDownloaded": "{{count}} Assets heruntergeladen",
+  "frameworksDetected": "Erkannte Frameworks"
+}

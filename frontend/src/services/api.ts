@@ -13,6 +13,9 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  // Add language header
+  const lang = localStorage.getItem('dexter_language') || 'pt-BR';
+  config.headers['Accept-Language'] = lang;
   return config;
 });
 
@@ -56,7 +59,31 @@ export const projectApi = {
 // Clone
 export const cloneApi = {
   clone: (data: { url: string; name?: string }) => api.post('/clone', data),
+  cloneStream: (data: { url: string; name?: string }) => {
+    const token = localStorage.getItem('dexter_token');
+    return fetch(API_URL + '/clone/stream', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+      body: JSON.stringify(data),
+    });
+  },
   getStatus: (projectId: string) => api.get(`/clone/status/${projectId}`),
+};
+
+// Upload
+export const uploadApi = {
+  uploadProject: (file: File, name?: string) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (name) formData.append('name', name);
+    return api.post('/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 120000,
+    });
+  },
 };
 
 // Pages

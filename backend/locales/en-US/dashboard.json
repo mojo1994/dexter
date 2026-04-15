@@ -1,0 +1,19 @@
+{
+  "title": "My Projects",
+  "projectCount": "{{count}} project(s)",
+  "newProject": "New Project",
+  "clonePage": "Clone Page",
+  "loadPage": "Load Page",
+  "noProjects": "No projects yet",
+  "noProjectsDesc": "Clone a page, upload a project, or create a new one to get started",
+  "projectName": "Project Name",
+  "deleteConfirm": "Are you sure you want to delete this project?",
+  "exportSuccess": "Export downloaded!",
+  "exportFailed": "Export failed",
+  "cloned": "Cloned",
+  "cloning": "Cloning",
+  "failed": "Failed",
+  "draft": "Draft",
+  "ready": "Ready",
+  "processing": "Processing"
+}
