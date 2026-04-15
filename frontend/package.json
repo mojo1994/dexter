@@ -17,6 +17,7 @@
     "clsx": "^2.1.1",
     "grapesjs": "^0.22.15",
     "grapesjs-preset-webpage": "^1.0.3",
+    "grapesjs-style-bg": "^2.0.2",
     "i18next": "^26.0.5",
     "i18next-browser-languagedetector": "^8.2.1",
     "i18next-http-backend": "^3.0.4",

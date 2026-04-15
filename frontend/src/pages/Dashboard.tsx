@@ -112,7 +112,7 @@ export default function Dashboard() {
                   loadProjects();
                   return;
                 }
-              } catch {}
+              } catch { /* ignore malformed SSE data */ }
             }
           }
         }

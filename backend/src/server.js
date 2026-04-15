@@ -32,6 +32,9 @@ const io = new Server(server, {
   },
 });
 
+// Make io accessible to routes
+app.set('io', io);
+
 // Initialize database
 initializeDatabase();
 
@@ -107,6 +110,11 @@ app.use(errorHandler);
 // Socket.IO connection handling
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
+
+  // Allow clients to subscribe to specific job updates
+  socket.on('subscribe', (jobId) => {
+    socket.join('job:' + jobId);
+  });
 
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);

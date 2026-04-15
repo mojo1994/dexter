@@ -3,6 +3,7 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import grapesjs, { Editor as GrapesEditor } from 'grapesjs';
 import 'grapesjs/dist/css/grapes.min.css';
 import gjsPresetWebpage from 'grapesjs-preset-webpage';
+import gjsStyleBg from 'grapesjs-style-bg';
 import { pageApi, assetApi } from '../services/api';
 import { useEditorStore } from '../store/editorStore';
 import { useTranslation } from 'react-i18next';
@@ -23,13 +24,92 @@ import {
   Image,
 } from 'lucide-react';
 
+/**
+ * Register custom GrapesJS button component with href trait
+ * This creates an <a> tag styled as a button, with editable href in the traits panel
+ */
+function registerCustomButtonComponent(editor: GrapesEditor) {
+  // Register custom component type: button-link (an <a> styled as button with href trait)
+  editor.Components.addType('button-link', {
+    isComponent: (el: HTMLElement) => el.tagName === 'A' && el.classList.contains('btn-cta'),
+    model: {
+      defaults: {
+        tagName: 'a',
+        droppable: false,
+        attributes: {
+          class: 'btn-cta',
+          href: '#',
+          target: '_blank',
+        },
+        content: 'Click Here',
+        traits: [
+          {
+            type: 'text',
+            name: 'href',
+            label: 'Link (URL)',
+            placeholder: 'https://...',
+          },
+          {
+            type: 'text',
+            name: 'text',
+            label: 'Button Text',
+            changeProp: true,
+          },
+          {
+            type: 'select',
+            name: 'target',
+            label: 'Open In',
+            options: [
+              { id: '_blank', label: 'New Tab' },
+              { id: '_self', label: 'Same Tab' },
+            ],
+          },
+        ],
+        styles: `
+          .btn-cta {
+            display: inline-block;
+            padding: 14px 32px;
+            background: #2563EB;
+            color: #fff;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.2s;
+          }
+          .btn-cta:hover {
+            background: #1D4ED8;
+          }
+        `,
+      },
+      init() {
+        // Sync 'text' trait with component content
+        this.on('change:attributes:text', this.handleTextChange);
+        const content = this.get('content');
+        if (content) {
+          this.set('text', content);
+        }
+      },
+      handleTextChange() {
+        const text = this.get('attributes')?.text || this.get('text');
+        if (text) {
+          this.components(text);
+        }
+      },
+    },
+  });
+}
+
 function registerCustomBlocks(editor: GrapesEditor) {
   const bm = editor.BlockManager;
 
+  // CTA Button using custom button-link component type
   bm.add('cta-button', {
     label: 'CTA Button',
     category: 'Basic',
-    content: `<a href="#" style="display:inline-block;padding:14px 32px;background:#2563EB;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px;text-align:center;">Buy Now</a>`,
+    content: { type: 'button-link', content: 'Buy Now' },
     attributes: { class: 'fa fa-link' },
   });
 
@@ -164,7 +244,7 @@ export default function EditorPage() {
   const [searchParams] = useSearchParams();
   const projectId = searchParams.get('project') || '';
   const navigate = useNavigate();
-  const { t } = useTranslation(['editor', 'common']);
+  const { t, i18n } = useTranslation(['editor', 'common']);
   const editorRef = useRef<GrapesEditor | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [pageName, setPageName] = useState('');
@@ -210,13 +290,14 @@ export default function EditorPage() {
       width: 'auto',
       fromElement: false,
       storageManager: false,
-      plugins: [gjsPresetWebpage],
+      plugins: [gjsPresetWebpage, gjsStyleBg],
       pluginsOpts: {
         [gjsPresetWebpage as unknown as string]: {
           blocksBasicOpts: { flexGrid: true },
           navbarOpts: false,
           countdownOpts: false,
         },
+        [gjsStyleBg as unknown as string]: {},
       },
       canvas: {
         styles: [
@@ -272,6 +353,7 @@ export default function EditorPage() {
       },
     });
 
+    registerCustomButtonComponent(editor);
     registerCustomBlocks(editor);
 
     editor.on('change:changesCount', () => {
@@ -293,6 +375,37 @@ export default function EditorPage() {
       loadPage();
     }
   }, [pageId, loadPage]);
+
+  // GrapesJS i18n sync: update editor UI labels when dashboard language changes
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    const langMap: Record<string, string> = {
+      'pt-BR': 'pt',
+      'en-US': 'en',
+      'es': 'es',
+      'fr': 'fr',
+      'de': 'de',
+    };
+
+    const handleLanguageChanged = (lng: string) => {
+      const gjsLang = langMap[lng] || 'en';
+      try {
+        editor.I18n.setLocale(gjsLang);
+      } catch {
+        // GrapesJS may not have translations for this locale, which is fine
+      }
+    };
+
+    i18n.on('languageChanged', handleLanguageChanged);
+    // Set initial locale
+    handleLanguageChanged(i18n.language);
+
+    return () => {
+      i18n.off('languageChanged', handleLanguageChanged);
+    };
+  }, [i18n]);
 
   const handleSave = useCallback(async () => {
     if (!editorRef.current || !pageId) return;
