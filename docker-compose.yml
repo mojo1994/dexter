@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: dexter-backend
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - JWT_SECRET=${JWT_SECRET:-dexter-production-secret-change-me}
+      - JWT_EXPIRES_IN=7d
+      - FRONTEND_URL=http://localhost:5173
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PUPPETEER_HEADLESS=true
+      - PUPPETEER_TIMEOUT=30000
+    volumes:
+      - backend-uploads:/app/uploads
+      - backend-data:/app/data
+    depends_on:
+      - redis
+    networks:
+      - dexter-network
+
+  frontend:
+    build: ./frontend
+    container_name: dexter-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - dexter-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: dexter-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - dexter-network
+
+volumes:
+  backend-uploads:
+  backend-data:
+  redis-data:
+
+networks:
+  dexter-network:
+    driver: bridge

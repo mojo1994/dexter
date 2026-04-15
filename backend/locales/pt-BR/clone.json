@@ -1,0 +1,23 @@
+{
+  "title": "Clonar uma Página",
+  "urlLabel": "URL da Página",
+  "urlPlaceholder": "https://exemplo.com/pagina-de-vendas",
+  "nameLabel": "Nome do Projeto",
+  "namePlaceholder": "Minha Página de Vendas",
+  "optional": "opcional",
+  "startCloning": "Iniciar Clonagem",
+  "cloning": "Clonando...",
+  "cloningStarted": "Clonagem iniciada! Isso pode levar um momento...",
+  "cloneSuccess": "Página clonada com sucesso!",
+  "cloneFailed": "Falha na clonagem. Por favor, tente novamente.",
+  "invalidUrl": "URL inválida",
+  "fetching": "Buscando página...",
+  "parsing": "Analisando HTML...",
+  "downloading": "Baixando assets...",
+  "building": "Construindo projeto...",
+  "complete": "Completo!",
+  "downloadZip": "Baixar ZIP",
+  "editInCanvas": "Editar no Canvas",
+  "assetsDownloaded": "{{count}} assets baixados",
+  "frameworksDetected": "Frameworks detectados"
+}

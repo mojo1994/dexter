@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* GrapeJS Custom Theme */
+.gjs-one-bg {
+  background-color: #1f2937;
+}
+
+.gjs-two-color {
+  color: #d1d5db;
+}
+
+.gjs-three-bg {
+  background-color: #374151;
+}
+
+.gjs-four-color,
+.gjs-four-color-h:hover {
+  color: #60a5fa;
+}
+
+.gjs-field {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: #e5e7eb;
+}
+
+.gjs-field:focus {
+  border-color: #2563eb;
+}
+
+.gjs-block {
+  border: 1px solid #374151;
+  border-radius: 6px;
+  padding: 8px;
+  margin: 4px;
+  transition: all 0.2s;
+}
+
+.gjs-block:hover {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px #2563eb;
+}
+
+.gjs-block__media {
+  color: #9ca3af;
+}
+
+.gjs-block-label {
+  color: #d1d5db;
+  font-size: 11px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #4b5563;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #6b7280;
+}
+
+/* Editor panels */
+#blocks-panel .gjs-blocks-cs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+/* Layers panel */
+.gjs-layer {
+  background-color: #374151;
+  border-radius: 4px;
+  margin: 2px 0;
+}
+
+.gjs-layer:hover {
+  background-color: #4b5563;
+}
+
+/* Style manager improvements */
+.gjs-sm-sector-title {
+  background-color: #374151;
+  border-radius: 4px;
+  padding: 8px 10px;
+  color: #d1d5db;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.gjs-sm-property {
+  margin-bottom: 8px;
+}
+
+.gjs-sm-label {
+  color: #9ca3af;
+  font-size: 11px;
+}
+

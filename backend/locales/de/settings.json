@@ -1,0 +1,20 @@
+{
+  "title": "Einstellungen",
+  "profile": "Profil",
+  "account": "Konto",
+  "language": "Sprache",
+  "selectLanguage": "Sprache Wählen",
+  "theme": "Design",
+  "notifications": "Benachrichtigungen",
+  "plan": "Plan",
+  "currentPlan": "Aktueller Plan",
+  "upgradePlan": "Plan Upgraden",
+  "deleteAccount": "Konto Löschen",
+  "changePassword": "Passwort Ändern",
+  "updateProfile": "Profil Aktualisieren",
+  "portuguese": "Português (BR)",
+  "english": "English",
+  "spanish": "Español",
+  "french": "Français",
+  "german": "Deutsch"
+}
